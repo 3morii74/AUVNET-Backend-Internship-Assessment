@@ -1,0 +1,293 @@
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modalContent {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modalTitle {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 1.5rem;
+}
+
+.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.formGroup label {
+    font-size: 0.875rem;
+    color: #495057;
+    font-weight: 500;
+}
+
+.formGroup input,
+.formGroup select,
+.formGroup textarea {
+    padding: 0.8rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 1rem;
+    width: 100%;
+}
+
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus {
+    outline: none;
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.formGroup input[type="file"] {
+    padding: 0.5rem 0;
+    border: none;
+}
+
+.imagePreview {
+    margin-top: 10px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 10px;
+    text-align: center;
+    background-color: #f8f9fa;
+}
+
+.imagePreview img {
+    max-width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+.buttonGroup {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.cancelButton {
+    padding: 0.8rem 1.5rem;
+    border: 1px solid #6c757d;
+    background: none;
+    color: #6c757d;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.cancelButton:hover {
+    background-color: #6c757d;
+    color: white;
+}
+
+.submitButton {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    background-color: #28a745;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+}
+
+.submitButton:hover {
+    background-color: #218838;
+}
+
+.modal {
+    max-width: 600px;
+    margin: 1.75rem auto;
+}
+
+.modalHeader {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    padding: 1rem;
+}
+
+.modalBody {
+    padding: 1.5rem;
+}
+
+.modalFooter {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #dee2e6;
+}
+
+/* Override Bootstrap styles */
+:global(.modal-content) {
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+:global(.form-control),
+:global(.form-select) {
+    border-radius: 4px;
+    border: 1px solid #ced4da;
+    padding: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+:global(.form-control:focus),
+:global(.form-select:focus) {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+:global(.btn-primary) {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+:global(.btn-primary:hover) {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+:global(.btn-primary:disabled) {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    cursor: not-allowed;
+}
+
+:global(.alert-danger) {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1rem;
+    border-radius: 4px;
+}
+
+/* Form field styles */
+.modalBody :global(.form-label) {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.modalBody :global(.form-label::after) {
+    content: " *";
+    color: #dc3545;
+}
+
+.modalBody :global(.form-control),
+.modalBody :global(.form-select) {
+    border-color: #ced4da;
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.modalBody :global(.form-control:focus),
+.modalBody :global(.form-select:focus) {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.modalBody :global(.form-control::placeholder) {
+    color: #adb5bd;
+}
+
+.modalBody :global(.form-control.is-invalid),
+.modalBody :global(.form-select.is-invalid) {
+    border-color: #dc3545;
+    padding-right: calc(1.5em + 0.75rem);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+}
+
+.modalBody :global(.invalid-feedback) {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+    color: #dc3545;
+}
+
+/* Button styles */
+.modalFooter :global(.btn) {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.modalFooter :global(.btn-primary) {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.modalFooter :global(.btn-primary:hover) {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+.modalFooter :global(.btn-primary:disabled) {
+    background-color: #28a745;
+    border-color: #28a745;
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.modalFooter :global(.btn-secondary) {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+.modalFooter :global(.btn-secondary:hover) {
+    background-color: #5a6268;
+    border-color: #545b62;
+}
+
+.modalFooter :global(.btn-secondary:disabled) {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    opacity: 0.65;
+    cursor: not-allowed;
+}

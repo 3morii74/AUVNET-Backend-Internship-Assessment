@@ -1,0 +1,257 @@
+import React, { useState, useEffect, useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
+import {
+    getProducts,
+    getUserProducts,
+    createProduct,
+    updateProduct,
+    deleteProduct,
+    adminDeleteProduct
+} from '../services/productService';
+import { getCategories } from '../services/categoryService';
+import { addToWishlist, removeFromWishlist } from '../services/wishlistService';
+import ProductModal from '../components/ProductModal';
+import styles from './ProductsPage.module.css';
+
+const ProductsPage = () => {
+    const { user } = useContext(AuthContext);
+    const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [showUserProducts, setShowUserProducts] = useState(false);
+
+    useEffect(() => {
+        fetchData();
+    }, [showUserProducts]);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const [productsData, categoriesData] = await Promise.all([
+                showUserProducts ? getUserProducts() : getProducts(),
+                getCategories()
+            ]);
+
+            // Ensure products is always an array and add ownership flag
+            const productsWithOwnership = Array.isArray(productsData?.data)
+                ? productsData.data.map(product => ({
+                    ...product,
+                    isOwner: user && (user.type === 'admin' || user.id === product.user._id)
+                }))
+                : [];
+
+            setProducts(productsWithOwnership);
+            setCategories(Array.isArray(categoriesData) ? categoriesData : []);
+
+            console.log('Current user:', user);
+            console.log('Products with ownership:', productsWithOwnership);
+        } catch (err) {
+            console.error('Error fetching data:', err);
+            setError(err.response?.data?.message || 'Failed to fetch data');
+            setProducts([]);
+            setCategories([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleAdd = () => {
+        setSelectedProduct(null);
+        setModalOpen(true);
+    };
+
+    const handleEdit = (product) => {
+        setSelectedProduct(product);
+        setModalOpen(true);
+    };
+
+    const handleDelete = async (productId) => {
+        if (window.confirm('Are you sure you want to delete this product?')) {
+            try {
+                // Always use deleteProduct for both admin and regular users
+                await deleteProduct(productId);
+                await fetchData();
+            } catch (err) {
+                console.error('Error deleting product:', err);
+                setError(err.response?.data?.message || 'Failed to delete product');
+            }
+        }
+    };
+
+    const handleWishlist = async (productId, isInWishlist) => {
+        try {
+            if (isInWishlist) {
+                await removeFromWishlist(productId);
+            } else {
+                await addToWishlist(productId);
+            }
+            await fetchData();
+        } catch (err) {
+            console.error('Error updating wishlist:', err);
+            setError(err.response?.data?.message || 'Failed to update wishlist');
+        }
+    };
+
+    const handleSubmit = async (formData) => {
+        try {
+            setError(null);
+
+            // Log the received form data
+            console.log('Received form data:', formData);
+
+            // Log form entries to verify data
+            console.log('Form entries:');
+            for (let [key, value] of formData.entries()) {
+                console.log(`${key}:`, value);
+            }
+
+            if (selectedProduct) {
+                await updateProduct(selectedProduct._id, formData);
+            } else {
+                await createProduct(formData);
+            }
+            setModalOpen(false);
+            await fetchData();
+        } catch (err) {
+            console.error('Error submitting product:', err);
+            console.error('Error details:', err.response?.data);
+            setError(
+                err.response?.data?.message ||
+                `Failed to ${selectedProduct ? 'update' : 'create'} product`
+            );
+        }
+    };
+
+    if (loading) {
+        return <div className={styles.loading}>Loading products...</div>;
+    }
+
+    return (
+        <div className={styles.container}>
+            <div className={styles.header}>
+                <div>
+                    <h1 className={styles.title}>Products</h1>
+                    {user && user.type !== 'admin' && (
+                        <button
+                            className={styles.filterButton}
+                            onClick={() => setShowUserProducts(!showUserProducts)}
+                        >
+                            {showUserProducts ? 'Show All Products' : 'Show My Products'}
+                        </button>
+                    )}
+                </div>
+                {/* Only show Add Product button for regular users */}
+                {user && user.type !== 'admin' && (
+                    <button className={styles.addButton} onClick={handleAdd}>
+                        Add Product
+                    </button>
+                )}
+            </div>
+
+            {error && <div className={styles.error}>{error}</div>}
+
+            {products.length === 0 ? (
+                <div className={styles.emptyState}>
+                    <p>No products found.</p>
+                    {user && user.type !== 'admin' && (
+                        <p>
+                            {showUserProducts
+                                ? "You haven't created any products yet."
+                                : 'Be the first to add a product!'}
+                        </p>
+                    )}
+                </div>
+            ) : (
+                <div className={styles.grid}>
+                    {products.map((product) => (
+                        <div key={product._id} className={styles.card}>
+                            {/* Only show "My Product" badge for regular users who own the product */}
+                            {product.isOwner && user.type !== 'admin' && (
+                                <div className={styles.userProductBadge}>My Product</div>
+                            )}
+                            <img
+                                src={product.imageUrl ? `http://localhost:5000${product.imageUrl}` : 'https://via.placeholder.com/300'}
+                                alt={product.name}
+                                className={styles.cardImage}
+                                onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = 'https://via.placeholder.com/300';
+                                }}
+                            />
+                            <div className={styles.cardContent}>
+                                <h2 className={styles.cardTitle}>{product.name}</h2>
+                                <p className={styles.cardPrice}>${product.price}</p>
+                                {product.category && (
+                                    <p className={styles.cardCategory}>
+                                        {product.category.name}
+                                    </p>
+                                )}
+                                <div className={styles.cardActions}>
+                                    {/* Show wishlist button for non-admin users and non-owned products */}
+                                    {user && !product.isOwner && user.type !== 'admin' && (
+                                        <button
+                                            className={styles.wishlistButton}
+                                            onClick={() =>
+                                                handleWishlist(
+                                                    product._id,
+                                                    product.isInWishlist
+                                                )
+                                            }
+                                        >
+                                            {product.isInWishlist
+                                                ? '❤️ Remove from Wishlist'
+                                                : '🤍 Add to Wishlist'}
+                                        </button>
+                                    )}
+                                    {/* Show edit button only for regular users who own the product */}
+                                    {product.isOwner && user.type !== 'admin' && (
+                                        <div className={styles.ownerActions}>
+                                            <button
+                                                className={styles.editButton}
+                                                onClick={() => handleEdit(product)}
+                                            >
+                                                ✏️ Edit
+                                            </button>
+                                            <button
+                                                className={styles.deleteButton}
+                                                onClick={() => handleDelete(product._id)}
+                                            >
+                                                🗑️ Delete
+                                            </button>
+                                        </div>
+                                    )}
+                                    {/* Show only delete button for admin */}
+                                    {user && user.type === 'admin' && (
+                                        <div className={styles.ownerActions}>
+                                            <button
+                                                className={styles.deleteButton}
+                                                onClick={() => handleDelete(product._id)}
+                                            >
+                                                🗑️ Delete
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {modalOpen && (
+                <ProductModal
+                    product={selectedProduct}
+                    categories={categories}
+                    onSubmit={handleSubmit}
+                    onClose={() => setModalOpen(false)}
+                />
+            )}
+        </div>
+    );
+};
+
+export default ProductsPage; 
