@@ -9,7 +9,7 @@ const logger = require('./utils/logger');
 dotenv.config();
 
 const PORT = process.env.PORT || 4000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://amrnibo123:PTm5UvXOEafe63qh@cluster0.fcsfsvy.mongodb.net/Ecommerce2';
+const MONGO_URI = process.env.MONGO_URI;
 
 // Global error handler for uncaught exceptions
 process.on('uncaughtException', (err) => {
