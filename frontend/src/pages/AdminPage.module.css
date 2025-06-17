@@ -1,7 +1,7 @@
 .container {
+    padding: 20px;
     max-width: 1200px;
-    margin: 2rem auto;
-    padding: 0 1rem;
+    margin: 0 auto;
 }
 
 .header {
@@ -9,9 +9,8 @@
 }
 
 .title {
-    font-size: 2rem;
+    margin-bottom: 30px;
     color: #333;
-    margin-bottom: 2rem;
 }
 
 .subtitle {
@@ -19,162 +18,126 @@
 }
 
 .tabs {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #ddd;
 }
 
 .tab {
-    padding: 0.8rem 1.5rem;
+    padding: 10px 20px;
+    margin-right: 10px;
     border: none;
-    border-radius: 4px;
-    background: #f8f9fa;
-    color: #6c757d;
+    background: none;
     cursor: pointer;
-    font-size: 1rem;
-    transition: all 0.2s;
+    font-size: 16px;
+    color: #666;
+    position: relative;
 }
 
-.tab:hover {
-    background: #e9ecef;
+.tab.activeTab {
+    color: #28a745;
+    font-weight: 500;
 }
 
-.activeTab {
-    background: #28a745;
-    color: white;
-}
-
-.activeTab:hover {
-    background: #218838;
+.tab.activeTab::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #28a745;
 }
 
 .tableContainer {
     background: white;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+    padding: 20px;
+    margin-bottom: 30px;
 }
 
 .table {
     width: 100%;
     border-collapse: collapse;
+    margin-bottom: 20px;
 }
 
 .table th,
 .table td {
-    padding: 1rem;
+    padding: 12px;
     text-align: left;
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 1px solid #ddd;
 }
 
 .table th {
-    background: #f8f9fa;
-    font-weight: 600;
-    color: #495057;
+    font-weight: 500;
+    color: #333;
+    background-color: #f8f9fa;
 }
 
 .table tr:last-child td {
     border-bottom: none;
 }
 
-.actions {
+.actionButtons {
     display: flex;
-    gap: 0.5rem;
+    gap: 8px;
 }
 
-.actionButton {
-    padding: 0.5rem 1rem;
+.actionButton,
+.editButton,
+.deleteButton {
+    padding: 6px 12px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 0.875rem;
-    transition: all 0.2s;
+    font-size: 14px;
+    transition: background-color 0.2s;
 }
 
-.editButton {
+.actionButton {
     background-color: #28a745;
     color: white;
 }
 
-.editButton:hover {
+.actionButton:hover {
     background-color: #218838;
+}
+
+.editButton {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.editButton:hover {
+    background-color: #138496;
 }
 
 .deleteButton {
     background-color: #dc3545;
     color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.875rem;
-    transition: background-color 0.2s;
 }
 
 .deleteButton:hover {
     background-color: #c82333;
 }
 
-.addButton {
-    background-color: #28a745;
-    color: white;
-    border: none;
-    padding: 0.8rem 1.5rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: background-color 0.2s;
-    margin-bottom: 1rem;
-}
-
-.addButton:hover {
-    background-color: #218838;
-}
-
-.loading {
-    text-align: center;
-    padding: 2rem;
-    font-size: 1.25rem;
-    color: #666;
-}
-
-.error {
-    color: #dc3545;
-    background-color: #f8d7da;
-    border: 1px solid #f5c6cb;
-    border-radius: 4px;
-    padding: 10px;
-    margin-bottom: 15px;
-    text-align: center;
-    font-size: 14px;
-}
-
-.emptyState {
-    text-align: center;
-    padding: 3rem;
-}
-
-.emptyState p {
-    color: #6c757d;
-    font-size: 1.125rem;
-}
-
 .form {
-    padding: 1.5rem;
-    border-bottom: 1px solid #dee2e6;
-    margin-bottom: 1.5rem;
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
 }
 
 .formGroup {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-bottom: 20px;
+    gap: 15px;
 }
 
 .formGroup input {
-    padding: 8px 12px;
-    border: 1px solid #ccc;
+    padding: 10px;
+    border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 14px;
 }
@@ -184,25 +147,63 @@
     cursor: not-allowed;
 }
 
-.createButton {
+.formButtons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.submitButton {
+    padding: 10px 20px;
     background-color: #28a745;
     color: white;
     border: none;
-    padding: 10px 15px;
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
-    font-weight: 500;
-    transition: background-color 0.2s;
 }
 
-.createButton:hover:not(:disabled) {
+.submitButton:hover {
     background-color: #218838;
 }
 
-.createButton:disabled {
+.cancelButton {
+    padding: 10px 20px;
     background-color: #6c757d;
-    cursor: not-allowed;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.cancelButton:hover {
+    background-color: #5a6268;
+}
+
+.error {
+    color: #dc3545;
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #f8d7da;
+    border-radius: 4px;
+}
+
+.loading {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 30px;
+    color: #666;
+}
+
+.emptyState p {
+    color: #6c757d;
+    font-size: 1.125rem;
 }
 
 .badge {
@@ -223,99 +224,17 @@
     color: #007bff;
 }
 
-.formButtons {
+/* Disabled button styles */
+button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Pagination container styles */
+.paginationContainer {
     display: flex;
-    gap: 10px;
-}
-
-.submitButton {
-    background-color: #28a745;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    transition: background-color 0.2s;
-    flex: 1;
-}
-
-.submitButton:hover:not(:disabled) {
-    background-color: #218838;
-}
-
-.submitButton:disabled {
-    background-color: #6c757d;
-    cursor: not-allowed;
-}
-
-.cancelButton {
-    background-color: #6c757d;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    transition: background-color 0.2s;
-}
-
-.cancelButton:hover:not(:disabled) {
-    background-color: #5a6268;
-}
-
-.cancelButton:disabled {
-    opacity: 0.65;
-    cursor: not-allowed;
-}
-
-.actionButtons {
-    display: flex;
-    gap: 8px;
-}
-
-.editButton {
-    background-color: #17a2b8;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.2s;
-}
-
-.editButton:hover:not(:disabled) {
-    background-color: #138496;
-}
-
-.editButton:disabled {
-    background-color: #6c757d;
-    cursor: not-allowed;
-}
-
-.deleteButton {
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.2s;
-}
-
-.deleteButton:hover:not(:disabled) {
-    background-color: #c82333;
-}
-
-.deleteButton:disabled {
-    background-color: #6c757d;
-    cursor: not-allowed;
-}
-
-.editing {
-    background-color: #f8f9fa;
+    justify-content: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
 }

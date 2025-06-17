@@ -10,23 +10,15 @@ if (!fs.existsSync(uploadsDir)) {
 
 // Configure storage
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, uploadsDir);
-    },
-    filename: function (req, file, cb) {
-        // Create unique filename with original extension
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
-    }
+    destination: (req, file, cb) => cb(null, uploadsDir),
+    filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname),
 });
 
 // File filter
 const fileFilter = (req, file, cb) => {
-    // Accept images only
-    if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
-        return cb(new Error('Only image files are allowed!'), false);
-    }
-    cb(null, true);
+    const allowed = ['.png', '.jpg', '.jpeg', '.gif'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, allowed.includes(ext));
 };
 
 // Create multer upload middleware

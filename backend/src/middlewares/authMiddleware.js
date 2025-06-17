@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-module.exports = (req, res, next) => {
+exports.protect = (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ message: 'No token provided' });
@@ -13,4 +13,13 @@ module.exports = (req, res, next) => {
     } catch (err) {
         return res.status(401).json({ message: 'Invalid token' });
     }
+};
+
+exports.restrictTo = (...roles) => {
+    return (req, res, next) => {
+        if (!roles.includes(req.user.type)) {
+            return res.status(403).json({ message: 'You do not have permission to perform this action' });
+        }
+        next();
+    };
 }; 

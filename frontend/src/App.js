@@ -4,6 +4,7 @@ import './App.css';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProductsPage from './pages/ProductsPage';
+import ProductDetailsPage from './pages/ProductDetailsPage';
 import CategoriesPage from './pages/CategoriesPage';
 import WishlistPage from './pages/WishlistPage';
 import AdminPage from './pages/AdminPage';
@@ -23,6 +24,15 @@ function App() {
               <ProtectedRoute>
                 <Navbar />
                 <ProductsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/products/:id"
+            element={
+              <ProtectedRoute>
+                <Navbar />
+                <ProductDetailsPage />
               </ProtectedRoute>
             }
           />

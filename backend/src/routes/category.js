@@ -1,17 +1,25 @@
 const express = require('express');
 const router = express.Router();
 const categoryController = require('../controllers/categoryController');
-const auth = require('../middlewares/authMiddleware');
+const { protect, restrictTo } = require('../middlewares/authMiddleware');
 
-// All routes require authentication
-router.use(auth);
+// Test routes
+router.get('/test', categoryController.testCategories);
+router.post('/test/create', categoryController.createTestCategory);
 
-// CRUD
-router.post('/', categoryController.createCategory); // admin only
-router.get('/', categoryController.getCategories); // paginated flat list
-router.get('/tree', categoryController.getCategoryTree); // nested tree
+// Public routes
+router.get('/', categoryController.getCategories);
+
+// Protected routes
+router.use(protect);
+
+// Admin only routes
+router.post('/', restrictTo('admin'), categoryController.createCategory);
+router.put('/:id', restrictTo('admin'), categoryController.updateCategory);
+router.delete('/:id', restrictTo('admin'), categoryController.deleteCategory);
+
+// Protected routes (any authenticated user)
+router.get('/tree', categoryController.getCategoryTree);
 router.get('/:id', categoryController.getCategoryById);
-router.put('/:id', categoryController.updateCategory); // admin only
-router.delete('/:id', categoryController.deleteCategory); // admin only
 
 module.exports = router; 

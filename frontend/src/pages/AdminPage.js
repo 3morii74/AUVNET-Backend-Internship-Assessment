@@ -1,13 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import {
-    getUsers,
-    getAdmins,
-    deleteUser,
-    createAdmin,
-    deleteAdmin,
-    updateAdmin,
-} from '../services/adminService';
+import { getAllUsers, getAllAdmins, makeAdmin, removeAdmin, createAdmin, updateAdmin } from '../services/adminService';
 import styles from './AdminPage.module.css';
+import Pagination from '../components/Pagination';
 
 const AdminPage = () => {
     const [activeTab, setActiveTab] = useState('users');
@@ -23,12 +17,18 @@ const AdminPage = () => {
         name: '',
     });
 
+    // Separate pagination states for users and admins
+    const [currentUserPage, setCurrentUserPage] = useState(1);
+    const [currentAdminPage, setCurrentAdminPage] = useState(1);
+    const [userTotalPages, setUserTotalPages] = useState(1);
+    const [adminTotalPages, setAdminTotalPages] = useState(1);
+
     // Get current user ID from localStorage
     const currentUserId = JSON.parse(localStorage.getItem('user'))?._id;
 
     useEffect(() => {
         fetchData();
-    }, [activeTab]);
+    }, [activeTab, currentUserPage, currentAdminPage]);
 
     const fetchData = async () => {
         try {
@@ -36,19 +36,17 @@ const AdminPage = () => {
             setError(null);
 
             if (activeTab === 'users') {
-                const response = await getUsers();
-                // Ensure users is always an array
+                const response = await getAllUsers(currentUserPage, 4);
                 setUsers(Array.isArray(response?.data) ? response.data : []);
+                setUserTotalPages(response.totalPages || 1);
             } else {
-                const response = await getAdmins();
-                console.log('Admins response:', response);
-                // Ensure admins is always an array
+                const response = await getAllAdmins(currentAdminPage, 4);
                 setAdmins(Array.isArray(response?.data) ? response.data : []);
+                setAdminTotalPages(response.totalPages || 1);
             }
         } catch (err) {
             console.error('Error fetching data:', err);
             setError(err.response?.data?.message || 'Failed to fetch data');
-            // Set empty arrays on error
             if (activeTab === 'users') {
                 setUsers([]);
             } else {
@@ -59,23 +57,37 @@ const AdminPage = () => {
         }
     };
 
-    const handleDeleteUser = async (userId) => {
+    const handleUserPageChange = (page) => {
+        setCurrentUserPage(page);
+        window.scrollTo(0, 0);
+    };
+
+    const handleAdminPageChange = (page) => {
+        setCurrentAdminPage(page);
+        window.scrollTo(0, 0);
+    };
+
+    const handleMakeAdmin = async (userId) => {
         try {
-            await deleteUser(userId);
+            await makeAdmin(userId);
             await fetchData();
         } catch (err) {
-            console.error('Error deleting user:', err);
-            setError(err.response?.data?.message || 'Failed to delete user');
+            setError('Failed to make user admin');
+            console.error(err);
         }
     };
 
-    const handleDeleteAdmin = async (adminId) => {
+    const handleRemoveAdmin = async (adminId) => {
         try {
-            await deleteAdmin(adminId);
-            await fetchData();
+            await removeAdmin(adminId);
+            if (admins.length === 1 && currentAdminPage > 1) {
+                setCurrentAdminPage(prev => prev - 1);
+            } else {
+                await fetchData();
+            }
         } catch (err) {
-            console.error('Error deleting admin:', err);
-            setError(err.response?.data?.message || 'Failed to delete admin');
+            setError('Failed to remove admin');
+            console.error(err);
         }
     };
 
@@ -121,23 +133,21 @@ const AdminPage = () => {
 
             // Only include password in update if it was changed
             const updateData = {
-                name: newAdminData.name,
-                email: newAdminData.email,
-                username: newAdminData.username,
+                name: newAdminData.name.trim(),
+                email: newAdminData.email.trim(),
+                username: newAdminData.username.trim(),
                 ...(newAdminData.password && { password: newAdminData.password }),
             };
 
-            const response = await updateAdmin(editingAdmin._id, updateData);
-            console.log('Admin updated:', response);
+            console.log('Updating admin with data:', updateData);
+            const result = await updateAdmin(editingAdmin._id, updateData);
+            console.log('Update admin response:', result);
 
-            // Clear form and editing state
             handleCancelEdit();
-
-            // Refresh admin list
             await fetchData();
         } catch (err) {
-            console.error('Error updating admin:', err);
-            setError(err.response?.data?.message || 'Failed to update admin');
+            console.error('Error updating admin:', err.response?.data || err);
+            setError(err.response?.data?.message || err.response?.data?.details || 'Failed to update admin');
         } finally {
             setLoading(false);
         }
@@ -168,21 +178,24 @@ const AdminPage = () => {
                 return;
             }
 
-            const response = await createAdmin(newAdminData);
-            console.log('Admin created:', response);
+            const adminData = {
+                name: newAdminData.name.trim(),
+                email: newAdminData.email.trim(),
+                username: newAdminData.username.trim(),
+                password: newAdminData.password
+            };
 
-            // Clear form
+            console.log('Creating admin with data:', adminData);
+            const result = await createAdmin(adminData);
+            console.log('Create admin response:', result);
+
             setNewAdminData({ username: '', email: '', password: '', name: '' });
             setError(null);
-
-            // Switch to admin tab if not already there
             setActiveTab('admins');
-
-            // Refresh admin list
             await fetchData();
         } catch (err) {
-            console.error('Error creating admin:', err);
-            setError(err.response?.data?.message || 'Failed to create admin');
+            console.error('Error creating admin:', err.response?.data || err);
+            setError(err.response?.data?.message || err.response?.data?.details || 'Failed to create admin');
         } finally {
             setLoading(false);
         }
@@ -203,31 +216,39 @@ const AdminPage = () => {
                     <p>No users found.</p>
                 </div>
             ) : (
-                <table className={styles.table}>
-                    <thead>
-                        <tr>
-                            <th>Username</th>
-                            <th>Email</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {users.map((user) => (
-                            <tr key={user._id}>
-                                <td>{user.username}</td>
-                                <td>{user.email}</td>
-                                <td>
-                                    <button
-                                        className={styles.deleteButton}
-                                        onClick={() => handleDeleteUser(user._id)}
-                                    >
-                                        Delete
-                                    </button>
-                                </td>
+                <>
+                    <table className={styles.table}>
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {users.map((user) => (
+                                <tr key={user._id}>
+                                    <td>{user.username}</td>
+                                    <td>{user.email}</td>
+                                    <td>
+                                        <button
+                                            className={styles.actionButton}
+                                            onClick={() => handleMakeAdmin(user._id)}
+                                        >
+                                            Make Admin
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+
+                    <Pagination
+                        currentPage={currentUserPage}
+                        totalPages={userTotalPages}
+                        onPageChange={handleUserPageChange}
+                    />
+                </>
             )}
         </div>
     );
@@ -308,50 +329,58 @@ const AdminPage = () => {
                     <p>No admins found.</p>
                 </div>
             ) : (
-                <table className={styles.table}>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Username</th>
-                            <th>Email</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {admins.map((admin) => (
-                            <tr key={admin._id} className={editingAdmin?._id === admin._id ? styles.editing : ''}>
-                                <td>{admin.name}</td>
-                                <td>{admin.username}</td>
-                                <td>{admin.email}</td>
-                                <td>
-                                    {admin._id !== currentUserId && (
-                                        <div className={styles.actionButtons}>
-                                            <button
-                                                className={styles.editButton}
-                                                onClick={() => handleStartEdit(admin)}
-                                                disabled={loading || editingAdmin?._id === admin._id}
-                                            >
-                                                Edit
-                                            </button>
-                                            <button
-                                                className={styles.deleteButton}
-                                                onClick={() => handleDeleteAdmin(admin._id)}
-                                                disabled={loading || editingAdmin?._id === admin._id}
-                                            >
-                                                Delete
-                                            </button>
-                                        </div>
-                                    )}
-                                </td>
+                <>
+                    <table className={styles.table}>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {admins.map((admin) => (
+                                <tr key={admin._id} className={editingAdmin?._id === admin._id ? styles.editing : ''}>
+                                    <td>{admin.name}</td>
+                                    <td>{admin.username}</td>
+                                    <td>{admin.email}</td>
+                                    <td>
+                                        {admin._id !== currentUserId && (
+                                            <div className={styles.actionButtons}>
+                                                <button
+                                                    className={styles.editButton}
+                                                    onClick={() => handleStartEdit(admin)}
+                                                    disabled={loading || editingAdmin?._id === admin._id}
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    className={styles.deleteButton}
+                                                    onClick={() => handleRemoveAdmin(admin._id)}
+                                                    disabled={loading || editingAdmin?._id === admin._id}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        )}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+
+                    <Pagination
+                        currentPage={currentAdminPage}
+                        totalPages={adminTotalPages}
+                        onPageChange={handleAdminPageChange}
+                    />
+                </>
             )}
         </div>
     );
 
-    if (loading) {
+    if (loading && !users.length && !admins.length) {
         return <div className={styles.loading}>Loading...</div>;
     }
 
@@ -361,16 +390,20 @@ const AdminPage = () => {
 
             <div className={styles.tabs}>
                 <button
-                    className={`${styles.tab} ${activeTab === 'users' ? styles.activeTab : ''
-                        }`}
-                    onClick={() => setActiveTab('users')}
+                    className={`${styles.tab} ${activeTab === 'users' ? styles.activeTab : ''}`}
+                    onClick={() => {
+                        setActiveTab('users');
+                        setCurrentUserPage(1);
+                    }}
                 >
                     Users
                 </button>
                 <button
-                    className={`${styles.tab} ${activeTab === 'admins' ? styles.activeTab : ''
-                        }`}
-                    onClick={() => setActiveTab('admins')}
+                    className={`${styles.tab} ${activeTab === 'admins' ? styles.activeTab : ''}`}
+                    onClick={() => {
+                        setActiveTab('admins');
+                        setCurrentAdminPage(1);
+                    }}
                 >
                     Admins
                 </button>

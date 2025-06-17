@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { loginUser } from '../services/authService';
 import styles from './LoginPage.module.css';
 
@@ -49,6 +49,12 @@ const LoginPage = () => {
                     </button>
                 </form>
                 {error && <div className={styles.error}>{error}</div>}
+                <div className={styles.registerContainer}>
+                    <p className={styles.registerText}>Don't have an account?</p>
+                    <Link to="/register" className={styles.registerLink}>
+                        Register Now
+                    </Link>
+                </div>
             </div>
         </div>
     );

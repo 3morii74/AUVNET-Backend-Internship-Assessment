@@ -62,3 +62,27 @@
     text-align: center;
     margin-top: 1rem;
 }
+
+.registerContainer {
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #eee;
+}
+
+.registerText {
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.registerLink {
+    color: #28a745;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.registerLink:hover {
+    color: #218838;
+    text-decoration: underline;
+}

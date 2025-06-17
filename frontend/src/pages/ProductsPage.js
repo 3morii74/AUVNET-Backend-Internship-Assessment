@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import {
     getProducts,
@@ -11,9 +12,13 @@ import {
 import { getCategories } from '../services/categoryService';
 import { addToWishlist, removeFromWishlist } from '../services/wishlistService';
 import ProductModal from '../components/ProductModal';
+import Pagination from '../components/Pagination';
 import styles from './ProductsPage.module.css';
+import ProductForm from '../components/ProductForm';
+import ProductList from '../components/ProductList';
 
 const ProductsPage = () => {
+    const navigate = useNavigate();
     const { user } = useContext(AuthContext);
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
@@ -22,29 +27,33 @@ const ProductsPage = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [showUserProducts, setShowUserProducts] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [limit] = useState(4); // Set limit to 4 products per page
 
     useEffect(() => {
         fetchData();
-    }, [showUserProducts]);
+    }, [showUserProducts, currentPage]); // Add currentPage to dependencies
 
     const fetchData = async () => {
         try {
             setLoading(true);
             setError(null);
-            const [productsData, categoriesData] = await Promise.all([
-                showUserProducts ? getUserProducts() : getProducts(),
+            const [productsResponse, categoriesData] = await Promise.all([
+                showUserProducts ? getUserProducts(currentPage, limit) : getProducts(currentPage, limit),
                 getCategories()
             ]);
 
             // Ensure products is always an array and add ownership flag
-            const productsWithOwnership = Array.isArray(productsData?.data)
-                ? productsData.data.map(product => ({
+            const productsWithOwnership = Array.isArray(productsResponse?.data)
+                ? productsResponse.data.map(product => ({
                     ...product,
                     isOwner: user && (user.type === 'admin' || user.id === product.user._id)
                 }))
                 : [];
 
             setProducts(productsWithOwnership);
+            setTotalPages(productsResponse.totalPages || 1);
             setCategories(Array.isArray(categoriesData) ? categoriesData : []);
 
             console.log('Current user:', user);
@@ -57,6 +66,11 @@ const ProductsPage = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+        window.scrollTo(0, 0); // Scroll to top when changing page
     };
 
     const handleAdd = () => {
@@ -126,6 +140,12 @@ const ProductsPage = () => {
         }
     };
 
+    const handleProductClick = (productId) => {
+        navigate(`/products/${productId}`);
+    };
+
+    useEffect(() => { getCategories().then(setCategories); }, []);
+
     if (loading) {
         return <div className={styles.loading}>Loading products...</div>;
     }
@@ -138,7 +158,10 @@ const ProductsPage = () => {
                     {user && user.type !== 'admin' && (
                         <button
                             className={styles.filterButton}
-                            onClick={() => setShowUserProducts(!showUserProducts)}
+                            onClick={() => {
+                                setShowUserProducts(!showUserProducts);
+                                setCurrentPage(1); // Reset to first page when switching views
+                            }}
                         >
                             {showUserProducts ? 'Show All Products' : 'Show My Products'}
                         </button>
@@ -166,70 +189,88 @@ const ProductsPage = () => {
                     )}
                 </div>
             ) : (
-                <div className={styles.grid}>
-                    {products.map((product) => (
-                        <div key={product._id} className={styles.card}>
-                            {/* Only show "My Product" badge for regular users who own the product */}
-                            {product.isOwner && user.type !== 'admin' && (
-                                <div className={styles.userProductBadge}>My Product</div>
-                            )}
-                            <img
-                                src={product.imageUrl ? `http://localhost:5000${product.imageUrl}` : 'https://via.placeholder.com/300'}
-                                alt={product.name}
-                                className={styles.cardImage}
-                                onError={(e) => {
-                                    e.target.onerror = null;
-                                    e.target.src = 'https://via.placeholder.com/300';
-                                }}
-                            />
-                            <div className={styles.cardContent}>
-                                <h2 className={styles.cardTitle}>{product.name}</h2>
-                                <p className={styles.cardPrice}>${product.price}</p>
-                                {product.category && (
-                                    <p className={styles.cardCategory}>
-                                        {product.category.name}
-                                    </p>
+                <>
+                    <div className={styles.grid}>
+                        {products.map((product) => (
+                            <div key={product._id} className={styles.card}>
+                                {/* Only show "My Product" badge for regular users who own the product */}
+                                {product.isOwner && user.type !== 'admin' && (
+                                    <div className={styles.userProductBadge}>My Product</div>
                                 )}
+                                <div
+                                    className={styles.cardContent}
+                                    onClick={() => handleProductClick(product._id)}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    <img
+                                        src={product.imageUrl ? `http://localhost:4000${product.imageUrl}` : 'https://via.placeholder.com/300'}
+                                        alt={product.name}
+                                        className={styles.cardImage}
+                                        onError={(e) => {
+                                            e.target.onerror = null;
+                                            e.target.src = 'https://via.placeholder.com/300';
+                                        }}
+                                    />
+                                    <div className={styles.cardInfo}>
+                                        <h2 className={styles.cardTitle}>{product.name}</h2>
+                                        <p className={styles.cardPrice}>${product.price}</p>
+                                        {product.category && (
+                                            <p className={styles.cardCategory}>
+                                                {product.category.name}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
                                 <div className={styles.cardActions}>
-                                    {/* Show wishlist button for non-admin users and non-owned products */}
-                                    {user && !product.isOwner && user.type !== 'admin' && (
+                                    {/* Show wishlist button for non-admin users */}
+                                    {user && user.type !== 'admin' && (
                                         <button
                                             className={styles.wishlistButton}
-                                            onClick={() =>
+                                            onClick={(e) => {
+                                                e.stopPropagation();
                                                 handleWishlist(
                                                     product._id,
                                                     product.isInWishlist
-                                                )
-                                            }
+                                                );
+                                            }}
                                         >
                                             {product.isInWishlist
                                                 ? '❤️ Remove from Wishlist'
                                                 : '🤍 Add to Wishlist'}
                                         </button>
                                     )}
-                                    {/* Show edit button only for regular users who own the product */}
+                                    {/* Show edit/delete buttons for product owners */}
                                     {product.isOwner && user.type !== 'admin' && (
                                         <div className={styles.ownerActions}>
                                             <button
                                                 className={styles.editButton}
-                                                onClick={() => handleEdit(product)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleEdit(product);
+                                                }}
                                             >
                                                 ✏️ Edit
                                             </button>
                                             <button
                                                 className={styles.deleteButton}
-                                                onClick={() => handleDelete(product._id)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDelete(product._id);
+                                                }}
                                             >
                                                 🗑️ Delete
                                             </button>
                                         </div>
                                     )}
-                                    {/* Show only delete button for admin */}
+                                    {/* Show delete button for admin */}
                                     {user && user.type === 'admin' && (
                                         <div className={styles.ownerActions}>
                                             <button
                                                 className={styles.deleteButton}
-                                                onClick={() => handleDelete(product._id)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDelete(product._id);
+                                                }}
                                             >
                                                 🗑️ Delete
                                             </button>
@@ -237,9 +278,14 @@ const ProductsPage = () => {
                                     )}
                                 </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={handlePageChange}
+                    />
+                </>
             )}
 
             {modalOpen && (

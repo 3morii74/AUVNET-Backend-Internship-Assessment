@@ -1,13 +1,4 @@
-import axios from 'axios';
 import api from './api';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-
-// Configure axios to include the token in requests
-const getAuthHeader = () => {
-    const token = localStorage.getItem('token');
-    return token ? { Authorization: `Bearer ${token}` } : {};
-};
 
 // Helper function to handle errors
 const handleError = (error, operation) => {
@@ -17,9 +8,9 @@ const handleError = (error, operation) => {
 };
 
 // General Product Operations
-export const getProducts = async () => {
+export const getProducts = async (page = 1, limit = 4) => {
     try {
-        const response = await api.get('/products');
+        const response = await api.get(`/products?page=${page}&limit=${limit}`);
         console.log('Get products response:', response);
         return response.data;
     } catch (error) {
@@ -38,26 +29,24 @@ export const getProductById = async (productId) => {
 };
 
 // User Product Operations
-export const getUserProducts = async () => {
+export const getUserProducts = async (page = 1, limit = 4) => {
     try {
-        const response = await api.get('/products/user');
+        const response = await api.get(`/products/user/products?page=${page}&limit=${limit}`);
         console.log('Get user products response:', response);
         return response.data;
     } catch (error) {
         handleError(error, 'getUserProducts');
+        throw error; // Re-throw to handle in the component
     }
 };
 
 export const createProduct = async (formData) => {
     try {
-        console.log('Creating product with FormData:', formData);
         const response = await api.post('/products', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
+            headers: { 'Content-Type': 'multipart/form-data' }
         });
         console.log('Create product response:', response);
-        return response.data;
+        return response.data.product;
     } catch (error) {
         handleError(error, 'createProduct');
     }
@@ -72,7 +61,7 @@ export const updateProduct = async (productId, formData) => {
             },
         });
         console.log('Update product response:', response);
-        return response.data.product; // Return the updated product from the new response format
+        return response.data.product;
     } catch (error) {
         handleError(error, 'updateProduct');
     }
@@ -82,23 +71,13 @@ export const deleteProduct = async (productId) => {
     try {
         const response = await api.delete(`/products/${productId}`);
         console.log('Delete product response:', response);
-        return response.data; // Returns { message, productId }
+        return response.data;
     } catch (error) {
         handleError(error, 'deleteProduct');
     }
 };
 
 // Admin Product Operations
-export const getAllProducts = async () => {
-    try {
-        const response = await api.get('/admin/products');
-        console.log('Get all products response:', response);
-        return response.data;
-    } catch (error) {
-        handleError(error, 'getAllProducts');
-    }
-};
-
 export const adminDeleteProduct = async (productId) => {
     try {
         console.log('Admin deleting product:', productId);

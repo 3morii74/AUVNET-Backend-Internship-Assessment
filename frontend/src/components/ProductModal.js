@@ -28,7 +28,7 @@ const ProductModal = ({ product = null, categories = [], onSubmit, onClose }) =>
             });
             // Set image preview if product has an image
             if (product.imageUrl) {
-                setImagePreview(`http://localhost:5000${product.imageUrl}`);
+                setImagePreview(`http://localhost:4000${product.imageUrl}`);
             }
         }
     }, [product]);
@@ -105,14 +105,22 @@ const ProductModal = ({ product = null, categories = [], onSubmit, onClose }) =>
             // Log each field before appending
             console.log('Name:', formData.name.trim());
             console.log('Description:', formData.description.trim());
-            console.log('Price:', parseFloat(formData.price).toFixed(2));
+            console.log('Price:', formData.price);
             console.log('Category:', formData.category);
             console.log('Image:', formData.image);
 
             // Append all fields to form data
             form.append('name', formData.name.trim());
             form.append('description', formData.description.trim());
-            form.append('price', parseFloat(formData.price).toFixed(2));
+
+            // Log the price value before parsing
+            console.log('formData.price before parse:', formData.price);
+            const price = parseFloat(formData.price);
+            if (isNaN(price) || price <= 0) {
+                throw new Error('Price must be a positive number');
+            }
+            form.append('price', price);
+
             form.append('category', formData.category);
 
             // Only append image if it exists and is a new image

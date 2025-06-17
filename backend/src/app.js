@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
+const errorHandler = require('./middlewares/errorHandler');
 const authRoutes = require('./routes/auth');
 const categoryRoutes = require('./routes/category');
 const productRoutes = require('./routes/product');
@@ -12,24 +13,47 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Add request logging in development
+if (process.env.NODE_ENV === 'development') {
+    app.use((req, res, next) => {
+        console.log(`${req.method} ${req.url}`);
+        next();
+    });
+}
 
-// Serve static files from uploads directory
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+try {
+    console.log('Initializing middleware...');
+    app.use(cors());
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
 
-// TODO: Add routes here
-app.use('/api/auth', authRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/wishlist', wishlistRoutes);
-app.use('/api/admin', adminRoutes);
+    // Serve static files from uploads directory
+    console.log('Setting up static file serving...');
+    app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ message: 'Something broke!', error: err.message });
-});
+    // Initialize routes
+    console.log('Initializing routes...');
+    app.use('/api/auth', authRoutes);
+    app.use('/api/categories', categoryRoutes);
+    app.use('/api/products', productRoutes);
+    app.use('/api/wishlist', wishlistRoutes);
+    app.use('/api/admin', adminRoutes);
+
+    // 404 handler
+    app.use((req, res) => {
+        res.status(404).json({ message: 'Route not found' });
+    });
+
+    // Error handling middleware
+    app.use(errorHandler);
+
+    console.log('App initialization completed successfully');
+} catch (err) {
+    console.error('Error during app initialization:');
+    console.error('Error name:', err.name);
+    console.error('Error message:', err.message);
+    console.error('Error stack:', err.stack);
+    throw err; // Re-throw to be caught by global error handler
+}
 
 module.exports = app; 

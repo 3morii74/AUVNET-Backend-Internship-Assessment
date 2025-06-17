@@ -1,20 +1,20 @@
 import axios from 'axios';
 import api from './api';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
 
 const getAuthHeader = () => {
     const token = localStorage.getItem('token');
     return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-export const getWishlist = async () => {
+export const getWishlist = async (page = 1, limit = 4) => {
     try {
-        const response = await api.get('/wishlist');
+        const response = await api.get(`/wishlist?page=${page}&limit=${limit}`);
         console.log('Get wishlist response:', response);
         return response.data;
     } catch (error) {
-        console.error('Error in getWishlist:', error.response?.data || error.message);
+        console.error('Error fetching wishlist:', error);
         throw error;
     }
 };
@@ -25,7 +25,7 @@ export const addToWishlist = async (productId) => {
         console.log('Add to wishlist response:', response);
         return response.data;
     } catch (error) {
-        console.error('Error in addToWishlist:', error.response?.data || error.message);
+        console.error('Error adding to wishlist:', error);
         throw error;
     }
 };
@@ -36,7 +36,7 @@ export const removeFromWishlist = async (productId) => {
         console.log('Remove from wishlist response:', response);
         return response.data;
     } catch (error) {
-        console.error('Error in removeFromWishlist:', error.response?.data || error.message);
+        console.error('Error removing from wishlist:', error);
         throw error;
     }
 }; 
