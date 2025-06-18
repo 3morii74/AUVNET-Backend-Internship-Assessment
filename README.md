@@ -387,3 +387,7 @@ logs/
 - Log level filtering
 - Timestamp-based entries
 - JSON formatted logs for easy parsing
+### ERD
+![ERD](https://github.com/user-attachments/assets/10095dad-dd4e-4ca5-abe8-1b8d98049c2a)
+### Sequence diagram
+![Sequence diagram](https://github.com/user-attachments/assets/cea0a363-d14e-4386-a710-ec9ec5fbd591)
