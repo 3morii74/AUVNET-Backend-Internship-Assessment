@@ -23,7 +23,7 @@ This is a robust e-commerce backend API built with Node.js and Express.js, featu
 - **Framework**: Express.js
 - **Database**: MongoDB with Mongoose ODM
 - **Authentication**: JSON Web Tokens (JWT)
-- **File Upload**: Multer & Cloudinary
+- **File Upload**: Multer
 - **Input Validation**: Custom middleware
 - **Error Handling**: Custom error classes and middleware
 - **Logging**: Custom logging utility
@@ -114,7 +114,6 @@ backend/
 ### Product Management
 
 - CRUD operations for products
-- Image upload with Cloudinary integration
 - Product ownership validation
 - Pagination support
 - Category association
@@ -200,7 +199,6 @@ DELETE /api/wishlist/:id   # Remove from wishlist
 ## File Upload
 
 - Multer middleware for handling multipart/form-data
-- Cloudinary integration for image storage
 - File type validation
 - File size limits
 - Automatic cleanup of unused files
@@ -257,7 +255,6 @@ DELETE /api/wishlist/:id   # Remove from wishlist
 
 - Node.js (v14 or higher)
 - MongoDB
-- Cloudinary account
 
 ### Installation
 
@@ -272,8 +269,13 @@ git clone <repository-url>
 ```bash
 cd backend
 npm install
+npm start
 ```
-
+```bash
+cd frontend
+npm install
+npm start
+```
 3. Set up environment variables
 
 ```bash
@@ -295,11 +297,8 @@ npm start
 
 ```
 PORT=4000
-MONGODB_URI=your_mongodb_uri
+MONGO_URI=your_mongodb_uri
 JWT_SECRET=your_jwt_secret
-CLOUDINARY_CLOUD_NAME=your_cloudinary_name
-CLOUDINARY_API_KEY=your_cloudinary_key
-CLOUDINARY_API_SECRET=your_cloudinary_secret
 ```
 
 ## Security Features
