@@ -11,6 +11,11 @@ const ProtectedRoute = ({ children, allowedRoles = ['user', 'admin'] }) => {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
+    // If user is super_admin and route requires admin access, allow it
+    if (user?.type === 'super_admin' && allowedRoles.includes('admin')) {
+        return children;
+    }
+
     if (allowedRoles && !allowedRoles.includes(user?.type)) {
         // Redirect to products page if user doesn't have required role
         return <Navigate to="/products" replace />;

@@ -34,22 +34,22 @@ mongoose.connect(MONGO_URI)
     })
     .then(async (existingUser) => {
         if (!existingUser) {
-            // Create new admin user if none exists
+            // Create new super admin user if none exists
             const hashedPassword = await bcrypt.hash('admin', 10);
-            const admin = new User({
+            const superAdmin = new User({
                 username: 'admin',
-                name: 'Admin',
-                email: 'admin@example.com',
+                name: 'admin',
+                email: 'super_admin@example.com',
                 password: hashedPassword,
-                type: 'admin'
+                type: 'super_admin'
             });
-            await admin.save();
-            logger.info('Admin user created');
-        } else if (existingUser.type !== 'admin') {
-            // Update existing user to be admin if needed
-            existingUser.type = 'admin';
+            await superAdmin.save();
+            logger.info('Super admin user created');
+        } else if (existingUser.type !== 'super_admin') {
+            // Update existing user to be super admin if needed
+            existingUser.type = 'super_admin';
             await existingUser.save();
-            logger.info('Existing user updated to admin');
+            logger.info('Existing user updated to super admin');
         }
     })
     .catch((err) => {

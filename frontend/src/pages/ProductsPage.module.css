@@ -136,6 +136,23 @@
     background-color: #c0392b;
 }
 
+.deleteButton.adminAction {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    width: 100%;
+    margin-top: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.deleteButton.adminAction:hover {
+    background-color: #c82333;
+}
+
 .wishlistButton {
     background-color: #9b59b6;
     color: white;

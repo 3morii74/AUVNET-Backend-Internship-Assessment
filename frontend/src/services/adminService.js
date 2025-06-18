@@ -20,14 +20,8 @@ export const getUsers = async () => {
 };
 
 export const deleteUser = async (userId) => {
-    try {
-        const response = await api.delete(`/admin/users/${userId}`);
-        console.log('Delete user response:', response);
-        return response.data;
-    } catch (error) {
-        console.error('Error in deleteUser:', error.response?.data || error.message);
-        throw error;
-    }
+    const response = await api.delete(`/admin/users/${userId}`);
+    return response.data;
 };
 
 // Admin Management
@@ -43,23 +37,13 @@ export const getAdmins = async () => {
 };
 
 export const createAdmin = async (adminData) => {
-    try {
-        const response = await api.post('/admin/add-admin', adminData);
-        return response.data;
-    } catch (error) {
-        console.error('Error creating admin:', error);
-        throw error;
-    }
+    const response = await api.post('/admin/admins', adminData);
+    return response.data;
 };
 
 export const updateAdmin = async (adminId, adminData) => {
-    try {
-        const response = await api.put(`/admin/update-admin/${adminId}`, adminData);
-        return response.data;
-    } catch (error) {
-        console.error('Error updating admin:', error);
-        throw error;
-    }
+    const response = await api.put(`/admin/admins/${adminId}`, adminData);
+    return response.data;
 };
 
 export const deleteAdmin = async (adminId) => {
@@ -73,43 +57,18 @@ export const deleteAdmin = async (adminId) => {
 };
 
 // Get all users (paginated)
-export const getAllUsers = async (page = 1, limit = 4) => {
-    try {
-        const response = await api.get(`/admin/users?page=${page}&limit=${limit}`);
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching users:', error);
-        throw error;
-    }
+export const getAllUsers = async (page = 1, limit = 10) => {
+    const response = await api.get(`/admin/users?page=${page}&limit=${limit}`);
+    return response.data;
 };
 
 // Get all admins (paginated)
-export const getAllAdmins = async (page = 1, limit = 4) => {
-    try {
-        const response = await api.get(`/admin/admins?page=${page}&limit=${limit}`);
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching admins:', error);
-        throw error;
-    }
+export const getAllAdmins = async (page = 1, limit = 10) => {
+    const response = await api.get(`/admin/admins?page=${page}&limit=${limit}`);
+    return response.data;
 };
 
-export const makeAdmin = async (userId) => {
-    try {
-        const response = await api.post(`/admin/make-admin/${userId}`);
-        return response.data;
-    } catch (error) {
-        console.error('Error making admin:', error);
-        throw error;
-    }
-};
-
-export const removeAdmin = async (userId) => {
-    try {
-        const response = await api.post(`/admin/remove-admin/${userId}`);
-        return response.data;
-    } catch (error) {
-        console.error('Error removing admin:', error);
-        throw error;
-    }
+export const removeAdmin = async (adminId) => {
+    const response = await api.delete(`/admin/admins/${adminId}`);
+    return response.data;
 }; 

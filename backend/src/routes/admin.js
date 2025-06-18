@@ -3,22 +3,18 @@ const router = express.Router();
 const adminController = require('../controllers/adminController');
 const { protect, restrictTo } = require('../middlewares/authMiddleware');
 
-// All routes require authentication and admin role
+// All routes require authentication
 router.use(protect);
-router.use(restrictTo('admin'));
 
-// Admin management
-router.post('/add-admin', adminController.addAdmin);
-router.put('/update-admin/:id', adminController.updateAdmin);
-router.delete('/delete-admin/:id', adminController.deleteAdmin);
-router.get('/admins', adminController.getAdmins);
+// Admin management routes - restricted to super_admin only
+router.post('/add-admin', restrictTo('super_admin'), adminController.addAdmin);
+router.put('/update-admin/:id', restrictTo('super_admin'), adminController.updateAdmin);
+router.delete('/delete-admin/:id', restrictTo('super_admin'), adminController.deleteAdmin);
+router.get('/admins', restrictTo('super_admin'), adminController.getAdmins);
+router.post('/remove-admin/:id', restrictTo('super_admin'), adminController.removeAdmin);
 
-// User management
-router.get('/users', adminController.getUsers);
-router.delete('/users/:id', adminController.deleteUser);
-
-// Admin role management
-router.post('/make-admin/:id', adminController.makeAdmin);
-router.post('/remove-admin/:id', adminController.removeAdmin);
+// User management routes - accessible to both admin and super_admin
+router.get('/users', restrictTo('admin', 'super_admin'), adminController.getUsers);
+router.delete('/users/:id', restrictTo('admin', 'super_admin'), adminController.deleteUser);
 
 module.exports = router; 

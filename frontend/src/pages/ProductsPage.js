@@ -155,7 +155,7 @@ const ProductsPage = () => {
             <div className={styles.header}>
                 <div>
                     <h1 className={styles.title}>Products</h1>
-                    {user && user.type !== 'admin' && (
+                    {user && user.type === 'user' && (
                         <button
                             className={styles.filterButton}
                             onClick={() => {
@@ -168,7 +168,7 @@ const ProductsPage = () => {
                     )}
                 </div>
                 {/* Only show Add Product button for regular users */}
-                {user && user.type !== 'admin' && (
+                {user && user.type === 'user' && (
                     <button className={styles.addButton} onClick={handleAdd}>
                         Add Product
                     </button>
@@ -180,7 +180,7 @@ const ProductsPage = () => {
             {products.length === 0 ? (
                 <div className={styles.emptyState}>
                     <p>No products found.</p>
-                    {user && user.type !== 'admin' && (
+                    {user && user.type === 'user' && (
                         <p>
                             {showUserProducts
                                 ? "You haven't created any products yet."
@@ -222,8 +222,21 @@ const ProductsPage = () => {
                                     </div>
                                 </div>
                                 <div className={styles.cardActions}>
-                                    {/* Show wishlist button for non-admin users */}
-                                    {user && user.type !== 'admin' && (
+                                    {/* Show delete button for admin and super_admin users */}
+                                    {user && (user.type === 'admin' || user.type === 'super_admin') && (
+                                        <button
+                                            className={`${styles.deleteButton} ${styles.adminAction}`}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDelete(product._id);
+                                            }}
+                                        >
+                                            Delete Product
+                                        </button>
+                                    )}
+
+                                    {/* Show wishlist button only for regular users */}
+                                    {user && user.type === 'user' && (
                                         <button
                                             className={styles.wishlistButton}
                                             onClick={(e) => {
@@ -239,8 +252,9 @@ const ProductsPage = () => {
                                                 : '🤍 Add to Wishlist'}
                                         </button>
                                     )}
+
                                     {/* Show edit/delete buttons for product owners */}
-                                    {product.isOwner && user.type !== 'admin' && (
+                                    {product.isOwner && user.type === 'user' && (
                                         <div className={styles.ownerActions}>
                                             <button
                                                 className={styles.editButton}
@@ -251,20 +265,6 @@ const ProductsPage = () => {
                                             >
                                                 ✏️ Edit
                                             </button>
-                                            <button
-                                                className={styles.deleteButton}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleDelete(product._id);
-                                                }}
-                                            >
-                                                🗑️ Delete
-                                            </button>
-                                        </div>
-                                    )}
-                                    {/* Show delete button for admin */}
-                                    {user && user.type === 'admin' && (
-                                        <div className={styles.ownerActions}>
                                             <button
                                                 className={styles.deleteButton}
                                                 onClick={(e) => {

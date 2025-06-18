@@ -11,6 +11,8 @@ const Navbar = () => {
         return location.pathname === path ? styles.activeLink : '';
     };
 
+    const isAdminUser = user?.type === 'admin' || user?.type === 'super_admin';
+
     return (
         <nav className={styles.navbar}>
             <div className={styles.navContent}>
@@ -30,7 +32,7 @@ const Navbar = () => {
                     >
                         Categories
                     </Link>
-                    {user && user.type !== 'admin' && (
+                    {user && !isAdminUser && (
                         <Link
                             to="/wishlist"
                             className={`${styles.navLink} ${isActive('/wishlist')}`}
@@ -38,7 +40,7 @@ const Navbar = () => {
                             Wishlist
                         </Link>
                     )}
-                    {user?.type === 'admin' && (
+                    {isAdminUser && (
                         <Link
                             to="/admin"
                             className={`${styles.navLink} ${isActive('/admin')}`}

@@ -54,25 +54,6 @@ exports.deleteUser = async (req, res) => {
     }
 };
 
-// Make a user an admin
-exports.makeAdmin = async (req, res) => {
-    try {
-        const user = await User.findById(req.params.id);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        if (user.type === 'admin') {
-            return res.status(400).json({ message: 'User is already an admin' });
-        }
-        user.type = 'admin';
-        await user.save();
-        res.json({ message: 'User promoted to admin successfully' });
-    } catch (err) {
-        console.error('Error in makeAdmin:', err);
-        res.status(500).json({ message: 'Server error', error: err.message });
-    }
-};
-
 // Remove admin privileges
 exports.removeAdmin = async (req, res) => {
     try {

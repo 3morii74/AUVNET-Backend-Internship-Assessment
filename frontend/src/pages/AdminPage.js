@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { getAllUsers, getAllAdmins, makeAdmin, removeAdmin, createAdmin, updateAdmin } from '../services/adminService';
+import React, { useState, useEffect, useContext } from 'react';
+import { getAllUsers, getAllAdmins, removeAdmin, createAdmin, updateAdmin, deleteUser } from '../services/adminService';
 import styles from './AdminPage.module.css';
 import Pagination from '../components/Pagination';
+import { AuthContext } from '../context/AuthContext';
 
 const AdminPage = () => {
+    const { user } = useContext(AuthContext);
     const [activeTab, setActiveTab] = useState('users');
     const [users, setUsers] = useState([]);
     const [admins, setAdmins] = useState([]);
@@ -24,7 +26,8 @@ const AdminPage = () => {
     const [adminTotalPages, setAdminTotalPages] = useState(1);
 
     // Get current user ID from localStorage
-    const currentUserId = JSON.parse(localStorage.getItem('user'))?._id;
+    const currentUserId = user?._id;
+    const isSuperAdmin = user?.type === 'super_admin';
 
     useEffect(() => {
         fetchData();
@@ -39,7 +42,7 @@ const AdminPage = () => {
                 const response = await getAllUsers(currentUserPage, 4);
                 setUsers(Array.isArray(response?.data) ? response.data : []);
                 setUserTotalPages(response.totalPages || 1);
-            } else {
+            } else if (isSuperAdmin) {
                 const response = await getAllAdmins(currentAdminPage, 4);
                 setAdmins(Array.isArray(response?.data) ? response.data : []);
                 setAdminTotalPages(response.totalPages || 1);
@@ -65,16 +68,6 @@ const AdminPage = () => {
     const handleAdminPageChange = (page) => {
         setCurrentAdminPage(page);
         window.scrollTo(0, 0);
-    };
-
-    const handleMakeAdmin = async (userId) => {
-        try {
-            await makeAdmin(userId);
-            await fetchData();
-        } catch (err) {
-            setError('Failed to make user admin');
-            console.error(err);
-        }
     };
 
     const handleRemoveAdmin = async (adminId) => {
@@ -209,6 +202,23 @@ const AdminPage = () => {
         }));
     };
 
+    const handleDeleteUser = async (userId) => {
+        if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+            try {
+                setError(null);
+                await deleteUser(userId);
+                if (users.length === 1 && currentUserPage > 1) {
+                    setCurrentUserPage(prev => prev - 1);
+                } else {
+                    await fetchData();
+                }
+            } catch (err) {
+                setError('Failed to delete user');
+                console.error(err);
+            }
+        }
+    };
+
     const renderUserTable = () => (
         <div className={styles.tableContainer}>
             {users.length === 0 ? (
@@ -232,10 +242,10 @@ const AdminPage = () => {
                                     <td>{user.email}</td>
                                     <td>
                                         <button
-                                            className={styles.actionButton}
-                                            onClick={() => handleMakeAdmin(user._id)}
+                                            className={`${styles.actionButton} ${styles.danger}`}
+                                            onClick={() => handleDeleteUser(user._id)}
                                         >
-                                            Make Admin
+                                            Delete
                                         </button>
                                     </td>
                                 </tr>
@@ -254,76 +264,58 @@ const AdminPage = () => {
     );
 
     const renderAdminForm = () => (
-        <form className={styles.form} onSubmit={editingAdmin ? handleUpdateAdmin : handleCreateAdmin}>
-            {error && (
-                <div className={styles.error}>
-                    {error}
+        <div className={styles.form}>
+            <h2>Create New Admin</h2>
+            <form onSubmit={handleCreateAdmin}>
+                <div className={styles.formGroup}>
+                    <input
+                        type="text"
+                        name="name"
+                        placeholder="Full Name"
+                        value={newAdminData.name}
+                        onChange={handleInputChange}
+                        className={styles.input}
+                    />
                 </div>
-            )}
-            <div className={styles.formGroup}>
-                <input
-                    type="text"
-                    name="name"
-                    placeholder="Full Name"
-                    value={newAdminData.name}
-                    onChange={handleInputChange}
-                    required
-                    disabled={loading}
-                />
-                <input
-                    type="text"
-                    name="username"
-                    placeholder="Username"
-                    value={newAdminData.username}
-                    onChange={handleInputChange}
-                    required
-                    disabled={loading}
-                />
-                <input
-                    type="email"
-                    name="email"
-                    placeholder="Email"
-                    value={newAdminData.email}
-                    onChange={handleInputChange}
-                    required
-                    disabled={loading}
-                />
-                <input
-                    type="password"
-                    name="password"
-                    placeholder={editingAdmin ? "Leave blank to keep current password" : "Password"}
-                    value={newAdminData.password}
-                    onChange={handleInputChange}
-                    required={!editingAdmin}
-                    disabled={loading}
-                />
-                <div className={styles.formButtons}>
-                    <button
-                        type="submit"
-                        className={styles.submitButton}
-                        disabled={loading}
-                    >
-                        {loading ? (editingAdmin ? 'Updating...' : 'Creating...') : (editingAdmin ? 'Update Admin' : 'Create Admin')}
-                    </button>
-                    {editingAdmin && (
-                        <button
-                            type="button"
-                            className={styles.cancelButton}
-                            onClick={handleCancelEdit}
-                            disabled={loading}
-                        >
-                            Cancel
-                        </button>
-                    )}
+                <div className={styles.formGroup}>
+                    <input
+                        type="text"
+                        name="username"
+                        placeholder="Username"
+                        value={newAdminData.username}
+                        onChange={handleInputChange}
+                        className={styles.input}
+                    />
                 </div>
-            </div>
-        </form>
+                <div className={styles.formGroup}>
+                    <input
+                        type="email"
+                        name="email"
+                        placeholder="Email"
+                        value={newAdminData.email}
+                        onChange={handleInputChange}
+                        className={styles.input}
+                    />
+                </div>
+                <div className={styles.formGroup}>
+                    <input
+                        type="password"
+                        name="password"
+                        placeholder="Password"
+                        value={newAdminData.password}
+                        onChange={handleInputChange}
+                        className={styles.input}
+                    />
+                </div>
+                <button type="submit" className={`${styles.actionButton} ${styles.primary}`}>
+                    Create Admin
+                </button>
+            </form>
+        </div>
     );
 
     const renderAdminTable = () => (
         <div className={styles.tableContainer}>
-            {renderAdminForm()}
-
             {admins.length === 0 ? (
                 <div className={styles.emptyState}>
                     <p>No admins found.</p>
@@ -341,29 +333,25 @@ const AdminPage = () => {
                         </thead>
                         <tbody>
                             {admins.map((admin) => (
-                                <tr key={admin._id} className={editingAdmin?._id === admin._id ? styles.editing : ''}>
+                                <tr key={admin._id}>
                                     <td>{admin.name}</td>
                                     <td>{admin.username}</td>
                                     <td>{admin.email}</td>
                                     <td>
-                                        {admin._id !== currentUserId && (
-                                            <div className={styles.actionButtons}>
-                                                <button
-                                                    className={styles.editButton}
-                                                    onClick={() => handleStartEdit(admin)}
-                                                    disabled={loading || editingAdmin?._id === admin._id}
-                                                >
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    className={styles.deleteButton}
-                                                    onClick={() => handleRemoveAdmin(admin._id)}
-                                                    disabled={loading || editingAdmin?._id === admin._id}
-                                                >
-                                                    Delete
-                                                </button>
-                                            </div>
-                                        )}
+                                        <div className={styles.actionButtons}>
+                                            <button
+                                                className={`${styles.actionButton} ${styles.primary}`}
+                                                onClick={() => handleStartEdit(admin)}
+                                            >
+                                                Edit
+                                            </button>
+                                            <button
+                                                className={`${styles.actionButton} ${styles.danger}`}
+                                                onClick={() => handleRemoveAdmin(admin._id)}
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -380,10 +368,6 @@ const AdminPage = () => {
         </div>
     );
 
-    if (loading && !users.length && !admins.length) {
-        return <div className={styles.loading}>Loading...</div>;
-    }
-
     return (
         <div className={styles.container}>
             <h1 className={styles.title}>Admin Dashboard</h1>
@@ -398,20 +382,99 @@ const AdminPage = () => {
                 >
                     Users
                 </button>
-                <button
-                    className={`${styles.tab} ${activeTab === 'admins' ? styles.activeTab : ''}`}
-                    onClick={() => {
-                        setActiveTab('admins');
-                        setCurrentAdminPage(1);
-                    }}
-                >
-                    Admins
-                </button>
+                {isSuperAdmin && (
+                    <button
+                        className={`${styles.tab} ${activeTab === 'admins' ? styles.activeTab : ''}`}
+                        onClick={() => {
+                            setActiveTab('admins');
+                            setCurrentAdminPage(1);
+                        }}
+                    >
+                        Manage Admins
+                    </button>
+                )}
             </div>
 
             {error && <div className={styles.error}>{error}</div>}
 
-            {activeTab === 'users' ? renderUserTable() : renderAdminTable()}
+            {loading ? (
+                <div className={styles.loading}>Loading...</div>
+            ) : (
+                <>
+                    {activeTab === 'users' ? (
+                        renderUserTable()
+                    ) : (
+                        isSuperAdmin && (
+                            <div className={styles.adminSection}>
+                                {!editingAdmin ? (
+                                    <>
+                                        {renderAdminForm()}
+                                        {renderAdminTable()}
+                                    </>
+                                ) : (
+                                    <div className={styles.form}>
+                                        <h2>Edit Admin</h2>
+                                        <form onSubmit={handleUpdateAdmin}>
+                                            <div className={styles.formGroup}>
+                                                <input
+                                                    type="text"
+                                                    name="name"
+                                                    placeholder="Full Name"
+                                                    value={newAdminData.name}
+                                                    onChange={handleInputChange}
+                                                    className={styles.input}
+                                                />
+                                            </div>
+                                            <div className={styles.formGroup}>
+                                                <input
+                                                    type="text"
+                                                    name="username"
+                                                    placeholder="Username"
+                                                    value={newAdminData.username}
+                                                    onChange={handleInputChange}
+                                                    className={styles.input}
+                                                />
+                                            </div>
+                                            <div className={styles.formGroup}>
+                                                <input
+                                                    type="email"
+                                                    name="email"
+                                                    placeholder="Email"
+                                                    value={newAdminData.email}
+                                                    onChange={handleInputChange}
+                                                    className={styles.input}
+                                                />
+                                            </div>
+                                            <div className={styles.formGroup}>
+                                                <input
+                                                    type="password"
+                                                    name="password"
+                                                    placeholder="Password (leave empty to keep current)"
+                                                    value={newAdminData.password}
+                                                    onChange={handleInputChange}
+                                                    className={styles.input}
+                                                />
+                                            </div>
+                                            <div className={styles.formButtons}>
+                                                <button type="submit" className={`${styles.actionButton} ${styles.primary}`}>
+                                                    Update Admin
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={handleCancelEdit}
+                                                    className={`${styles.actionButton} ${styles.secondary}`}
+                                                >
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                )}
+                            </div>
+                        )
+                    )}
+                </>
+            )}
         </div>
     );
 };

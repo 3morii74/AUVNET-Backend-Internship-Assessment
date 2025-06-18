@@ -17,6 +17,9 @@ const CategoriesPage = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState(null);
 
+    // Helper function to check if user is an admin or super admin
+    const isAdminUser = user?.type === 'admin' || user?.type === 'super_admin';
+
     useEffect(() => {
         fetchCategories();
     }, []);
@@ -100,7 +103,7 @@ const CategoriesPage = () => {
                             <span className={styles.categoryName}>
                                 {category.name}
                             </span>
-                            {user?.type === 'admin' && (
+                            {isAdminUser && (
                                 <div className={styles.categoryActions}>
                                     <button
                                         className={styles.editButton}
@@ -132,7 +135,7 @@ const CategoriesPage = () => {
         <div className={styles.container}>
             <div className={styles.header}>
                 <h1 className={styles.title}>Categories</h1>
-                {user?.type === 'admin' && (
+                {isAdminUser && (
                     <button className={styles.addButton} onClick={handleAdd}>
                         Add Root Category
                     </button>
@@ -143,7 +146,7 @@ const CategoriesPage = () => {
 
             {categories.length === 0 ? (
                 <div className={styles.emptyState}>
-                    <p>No categories found. Add one to get started!</p>
+                    <p>No categories found. {isAdminUser && 'Add one to get started!'}</p>
                 </div>
             ) : (
                 renderCategoryTree()

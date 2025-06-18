@@ -3,9 +3,6 @@ const router = express.Router();
 const categoryController = require('../controllers/categoryController');
 const { protect, restrictTo } = require('../middlewares/authMiddleware');
 
-// Test routes
-router.get('/test', categoryController.testCategories);
-router.post('/test/create', categoryController.createTestCategory);
 
 // Public routes
 router.get('/', categoryController.getCategories);

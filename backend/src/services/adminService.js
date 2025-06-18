@@ -66,6 +66,12 @@ class AdminService {
             throw new ValidationError('Cannot update yourself here');
         }
 
+        // Check if target user is a super admin
+        const targetAdmin = await User.findById(adminId);
+        if (targetAdmin && targetAdmin.type === 'super_admin') {
+            throw new ValidationError('Cannot modify super admin account');
+        }
+
         await this.validateAdminData(updateData, true);
         await this.checkExistingUser(updateData.username, updateData.email, adminId);
 
@@ -90,6 +96,12 @@ class AdminService {
     async deleteAdmin(adminId, currentUserId) {
         if (adminId === currentUserId) {
             throw new ValidationError('Cannot delete yourself');
+        }
+
+        // Check if target user is a super admin
+        const targetAdmin = await User.findById(adminId);
+        if (targetAdmin && targetAdmin.type === 'super_admin') {
+            throw new ValidationError('Cannot delete super admin account');
         }
 
         const admin = await User.findOneAndDelete({ _id: adminId, type: 'admin' });
