@@ -32,44 +32,55 @@ This is a robust e-commerce backend API built with Node.js and Express.js, featu
 
 ```
 backend/
-├── src/
-│   ├── app.js           # Express app configuration
-│   ├── server.js        # Server entry point
-│   ├── config/         # Configuration files
+├── logs/              # Application logs
+│   ├── combined.log     # Combined logs from all sources
+│   ├── error.log       # Error-specific logs
+│   ├── exceptions.log  # Exception and crash logs
+│   └── rejections.log  # Promise rejection logs
+├── node_modules/     # Node.js dependencies
+├── src/             # Source code
+│   ├── app.js         # Express app configuration
+│   ├── server.js      # Server entry point
+│   ├── config/        # Configuration files
 │   │   ├── cloudinary.js
 │   │   └── upload.js
-│   ├── controllers/    # Route controllers
+│   ├── controllers/   # Route controllers
 │   │   ├── adminController.js
 │   │   ├── authController.js
 │   │   ├── categoryController.js
 │   │   ├── productController.js
 │   │   └── wishlistController.js
-│   ├── middlewares/    # Custom middlewares
+│   ├── middlewares/   # Custom middlewares
 │   │   ├── authMiddleware.js
 │   │   ├── checkProductOwnership.js
 │   │   ├── errorHandler.js
 │   │   └── validate.js
-│   ├── models/        # Mongoose models
+│   ├── models/       # Mongoose models
 │   │   ├── Category.js
 │   │   ├── Product.js
 │   │   ├── User.js
 │   │   └── Wishlist.js
-│   ├── routes/        # API routes
+│   ├── routes/       # API routes
 │   │   ├── admin.js
 │   │   ├── auth.js
 │   │   ├── category.js
 │   │   ├── product.js
 │   │   └── wishlist.js
-│   ├── services/      # Business logic
+│   ├── services/     # Business logic
 │   │   ├── adminService.js
 │   │   └── productService.js
-│   ├── utils/         # Utility functions
+│   ├── utils/        # Utility functions
 │   │   ├── asyncHandler.js
 │   │   ├── errors.js
 │   │   └── logger.js
-│   └── validations/   # Input validation schemas
+│   └── validations/  # Input validation schemas
 │       ├── adminValidations.js
 │       └── productValidations.js
+├── uploads/         # File upload directory
+├── .env            # Environment variables
+├── .gitignore      # Git ignore configuration
+├── package.json    # Project dependencies and scripts
+└── package-lock.json # Locked dependencies versions
 ```
 
 ## Authentication & Authorization
@@ -271,11 +282,13 @@ cd backend
 npm install
 npm start
 ```
+
 ```bash
 cd frontend
 npm install
 npm start
 ```
+
 3. Set up environment variables
 
 ```bash
@@ -324,3 +337,53 @@ JWT_SECRET=your_jwt_secret
 - Modular and maintainable code structure
 - Comprehensive logging system
 - Scalable file structure
+
+## Logging System
+
+The application implements a comprehensive logging system that tracks various types of events and stores them in separate log files:
+
+### Log Files Structure
+
+```
+logs/
+├── combined.log    # Combined logs from all sources
+├── error.log      # Error-specific logs
+├── exceptions.log # Exception and crash logs
+└── rejections.log # Promise rejection logs
+```
+
+### Logging Features
+
+- **Combined Logging**:
+
+  - All application logs in one file
+  - Includes info, warnings, and errors
+  - Timestamp for each entry
+  - Request details and responses
+
+- **Error Logging**:
+
+  - Application errors
+  - Database errors
+  - Validation errors
+  - Authentication failures
+
+- **Exception Logging**:
+
+  - Uncaught exceptions
+  - Critical system errors
+  - Stack traces
+  - Error context information
+
+- **Promise Rejection Logging**:
+  - Unhandled promise rejections
+  - Async operation failures
+  - API call failures
+  - Database query failures
+
+### Log Management
+
+- Automatic log creation
+- Log level filtering
+- Timestamp-based entries
+- JSON formatted logs for easy parsing
